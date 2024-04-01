@@ -1,117 +1,99 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useState, useRef } from 'react';
+import { SafeAreaView, StyleSheet, ActivityIndicator, View, Text, TouchableOpacity } from 'react-native';
+import LottieView from 'lottie-react-native';
+import { WebView } from 'react-native-webview';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const App = (): React.JSX.Element => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const webViewRef = useRef(null);
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const handleReload = () => {
+    setError(false);
+    if (webViewRef.current) {
+      webViewRef.current.reload();
+    }
   };
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+  const renderError = () => (
+    <View style={styles.fullScreenCenter}>
+      <LottieView
+        source={require('./assets/cat-animation.json')}
+        autoPlay
+        loop
+        style={styles.lottieStyle}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+      <Text style={styles.errorMessage}>
+        Oops! It looks like you're offline. Please check your internet connection and try again.
+      </Text>
+      <TouchableOpacity style={styles.tryAgainButton} onPress={handleReload}>
+        <Text style={styles.tryAgainButtonText}>Try Again</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.flexContainer}>
+      <WebView
+        ref={webViewRef}
+        source={{ uri: 'https://influlance.com' }}
+        style={styles.flexContainer}
+        onLoadStart={() => setLoading(true)}
+        onLoad={() => setLoading(false)}
+        onError={() => setError(true)}
+        renderError={renderError}
+        startInLoadingState={true}
+      />
+      {loading && !error && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator color="#0000ff" size="large" />
         </View>
-      </ScrollView>
+      )}
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  flexContainer: {
+    flex: 1,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  fullScreenCenter: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: 'white',
   },
-  sectionDescription: {
-    marginTop: 8,
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lottieStyle: {
+    width: 300,
+    height: 300,
+  },
+  errorMessage: {
+    marginTop: 20,
     fontSize: 18,
-    fontWeight: '400',
+    textAlign: 'center',
+    color: 'black',
   },
-  highlight: {
-    fontWeight: '700',
+  tryAgainButton: {
+    marginTop: 20,
+    backgroundColor: 'black',
+    padding: 10,
+    borderRadius: 5,
+  },
+  tryAgainButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
